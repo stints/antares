@@ -1,6 +1,6 @@
 # Antares ECS
 
-Simple use ECS library for javascript.
+A simple ECS library for javascript written in ES6.  Only works with chrome v.50+.
 
 ### Systems
 Systems and their update method handle the logic that modifies and uses your entities components.
