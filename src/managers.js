@@ -24,32 +24,40 @@ class EntityManager extends Manager {
 
   addComponent(entityId, ...components) {
     if(this._entities.hasOwnProperty(entityId)) {
+      let componentsAdded = false;
       let entity = this._entities[entityId];
       for(let i = 0; i < components.length; i++) {
         if(entity.addComponent(components[i])) {
           this._components[components[i].name()] = this._components[components[i].name()] || [];
           this._components[components[i].name()].push(entity);
-          this._eventManager.emit('addComponent', entity);
+          componentsAdded = true;
         }
       }
-      return true;
+      if(componentsAdded) {
+        this._eventManager.emit('addComponent', entity);
+      }
+      return componentsAdded;
     }
     return false;
   }
 
   removeComponent(entityId, ...components) {
     if(this._entities.hasOwnProperty(entityId)) {
+      let componentsRemoved = false;
       let entity = this._entities[entityId];
       for(let i = 0; i < components.length; i++) {
         entity.removeComponent(components[i]);
         for(let j = 0; j < this._components[componets[i]].length; j ++) {
           if(entityid === this._components[componets[i]][j].id) {
             this._components[componets[i]].splice(j, 1);
-            this._eventManager.emit('removeComponent', entity);
+            componentsRemoved = true;
           }
         }
       }
-      return true;
+      if(componentsRemoved) {
+        this._eventManager.emit('removeComponent', entity);
+      }
+      return componentsRemoved;
     }
     return false;
   }
