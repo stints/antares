@@ -1,11 +1,35 @@
 class System {
-  constructor(canvasManager, entityManager, eventManager) {
-    this._canvasManager = canvasManager;
-    this._entityManager = entityManager;
-    this._eventManager = eventManager;
+  constructor() {
+    this.canvasManager = null;
+    this.entityManager = null;
+    this.eventManager = null;
+
+    this._componentsTracked = [];
+
+    this.entities = [];
   }
 
-  function update() {
+  set componentsTracked(componentsTracked) {
+    this._componentsTracked = componentsTracked;
+  }
+
+  addComponentListener(entity) {
+    if(this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      this.entities.push(entity);
+    }
+  }
+
+  removeComponentListener(entity) {
+    if(!this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      for(let i = 0; i < this.entities.length; i++) {
+        if(entity.id === this.entities[i].id) {
+          this.entities.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  update() {
     throw new Error('function update() must be implemented by subclass.');
   }
 }

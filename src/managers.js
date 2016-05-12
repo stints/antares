@@ -1,10 +1,13 @@
 class Manager {}
 
 class EntityManager extends Manager {
-  constructor() {
+  constructor(eventManager) {
+    super();
     this._entities = {};
     this._groups = {};
     this._components = {};
+
+    this._eventManager = eventManager;
   }
 
   create(group, tag = null) {
@@ -26,6 +29,7 @@ class EntityManager extends Manager {
         if(entity.addComponent(components[i])) {
           this._components[components[i].name()] = this._components[components[i].name()] || [];
           this._components[components[i].name()].push(entity);
+          this._eventManager.emit('addComponent', entity);
         }
       }
       return true;
@@ -41,10 +45,26 @@ class EntityManager extends Manager {
         for(let j = 0; j < this._components[componets[i]].length; j ++) {
           if(entityid === this._components[componets[i]][j].id) {
             this._components[componets[i]].splice(j, 1);
+            this._eventManager.emit('removeComponent', entity);
           }
         }
       }
       return true;
+    }
+    return false;
+  }
+
+  hasComponents(entityId, ...components) {
+    if(this._entities.hasOwnProperty(entityId)) {
+      let entity = this._entities[entityId];
+      let has = true;
+      for(let i = 0; i < components.length; i++) {
+        if(!entity.hasOwnProperty(components[i])) {
+          has = false;
+          break;
+        }
+      }
+      return has;
     }
     return false;
   }
@@ -110,4 +130,61 @@ class EntityManager extends Manager {
     this._groups = {};
     this._entities = {};
   }
+}
+
+class SystemManager extends Manager {
+  constructor(canvasManager, entityManager, eventManager) {
+    super();
+    this._systems = [];
+    this._canvasManager = canvasManager;
+    this._entityManager = entityManager;
+    this._eventManager = eventManager;
+  }
+
+  addSystem(system, ...componentsTracked) {
+    if(system instanceof System) {
+      system._canvasManager = this._canvasManager;
+      system._entityManager = this._entityManager;
+      system._eventManager = this._eventManager;
+      system.componentsTracked = componentsTracked;
+
+      this._eventManager.on('addComponent', (entity) => system.addComponentListener(entity));
+      this._eventManager.on('removeComponent', (entity) => system.removeComponentListener(entity));
+
+      this._systems.push(system);
+      return true;
+    }
+    return false;
+  }
+
+  updateLoop() {
+    for(let i = 0; i < this._systems.length; i++) {
+      this._systems[i].update();
+    }
+  }
+}
+
+class EventManager extends Manager {
+  constructor() {
+    super();
+    this._events = {};
+  }
+
+  on(type, callback) {
+    this._events[type] = this._events[type] || [];
+    this._events[type].push(callback);
+  }
+
+  emit(type, ...args) {
+    if(this._events.hasOwnProperty(type)) {
+      let callbacks = this._events[type];
+      for(let i = 0; i < callbacks.length; i++) {
+        callbacks[i](...args);
+      }
+    }
+  }
+}
+
+class CanvasManager extends Manager {
+
 }

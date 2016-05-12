@@ -35,6 +35,17 @@ class Entity {
     this._group = group;
   }
 
+  getComponentNames() {
+    let names = [];
+    let thisKeys = Object.keys(this);
+    for(let i = 0; i < thisKeys.length; i++) {
+      if(thisKeys[i].charAt(0) != '_') {
+        names.push(thisKeys[i]);
+      }
+    }
+    return names;
+  }
+
   addComponent(component) {
     if(component instanceof Component) {
       this[component.name()] = component;
