@@ -1,3 +1,130 @@
+function UUID() {
+  let buffer = new Uint32Array(8);
+  window.crypto.getRandomValues(buffer);
+  let hex = [];
+  for(let i = 0; i < buffer.length; i++) {
+    hex.push(buffer[i].toString(16));
+  }
+  let s = hex.join('');
+  return s.substring(0,8)+"-"+s.substring(8,12)+"-"+s.substring(12,16)+"-"+s.substring(16,20)+"-"+s.substring(20,32);
+}
+class Component {
+  name() {
+    return this.constructor.name.toLowerCase().replace('component','');
+  }
+}
+class Entity {
+  constructor() {
+    this._id = UUID();
+    this._manager = null;
+    this._tag =  null;
+    this._group = null;
+
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get manager() {
+    return this._manager;
+  }
+
+  set manager(manager) {
+    this._manager = manager;
+  }
+
+  get tag() {
+    return this._tag;
+  }
+
+  set tag(tag) {
+    this._tag = tag;
+  }
+
+  get group() {
+    return this._group;
+  }
+
+  set group(group) {
+    this._group = group;
+  }
+
+  getComponentNames() {
+    let names = [];
+    let thisKeys = Object.keys(this);
+    for(let i = 0; i < thisKeys.length; i++) {
+      if(thisKeys[i].charAt(0) != '_') {
+        names.push(thisKeys[i]);
+      }
+    }
+    return names;
+  }
+
+  addComponent(component) {
+    if(component instanceof Component) {
+      this[component.name()] = component;
+      return true;
+    } else {
+      return new Error('object must be a subclass of Component');
+    }
+    return false;
+  }
+
+  removeComponent(component) {
+    let componentName = typeof component == 'string' ? component : component.name();
+    if(this.hasOwnProperty(componentName)) {
+      delete this[componentName.toLowerCase()];
+      return true;
+    }
+    return false;
+  }
+
+  removeAllComponents() {
+    let thisKeys = Object.keys(this);
+    for(let i = 0; i < thisKeys.length; i++) {
+      if(thisKeys[i].charAt(0) != '_') {
+        this.removeComponent(thisKeys[i]);
+      }
+    }
+    return;
+  }
+}
+class System {
+  constructor() {
+    this.canvasManager = null;
+    this.entityManager = null;
+    this.eventManager = null;
+
+    this._componentsTracked = [];
+
+    this.entities = [];
+  }
+
+  set componentsTracked(componentsTracked) {
+    this._componentsTracked = componentsTracked;
+  }
+
+  addComponentListener(entity) {
+    if(this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      this.entities.push(entity);
+    }
+  }
+
+  removeComponentListener(entity) {
+    if(!this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      for(let i = 0; i < this.entities.length; i++) {
+        if(entity.id === this.entities[i].id) {
+          this.entities.splice(i, 1);
+        }
+      }
+    }
+  }
+
+  update() {
+    throw new Error('function update() must be implemented by subclass.');
+  }
+}
 class Manager {}
 
 class EntityManager extends Manager {
@@ -192,9 +319,9 @@ class CanvasManager extends Manager {
 class Managers {
   constructor() {
     this.events = new EventManager();
-    this.entity = new EntityManager(this.eventManager);
+    this.entity = new EntityManager(this.events);
     this.canvas = new CanvasManager();
-    this.system = new SystemManager(this.canvasManager, this.entityManager, this.eventManager);
+    this.system = new SystemManager(this.canvas, this.entity, this.events);
   }
 }
 

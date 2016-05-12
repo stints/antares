@@ -5,24 +5,15 @@
     <title>test ecs</title>
   </head>
   <body>
-    <script src="src/entity.js"></script>
-    <script src="src/component.js"></script>
-    <script src="src/managers.js"></script>
-    <script src="src/system.js"></script>
-    <script src="src/utils.js"></script>
+    <script src="antares.min.js"></script>
     <script>
-      let eventManager = new EventManager();
-      let entityManager = new EntityManager(eventManager);
-      let canvasManager = new CanvasManager();
-      let systemManager = new SystemManager(canvasManager, entityManager, eventManager);
-
       class RenderSystem extends System {
         update() {
           console.log(this.entities);
         }
       }
 
-      systemManager.addSystem(new RenderSystem(), 'render', 'position');
+      managers.system.register(new RenderSystem(), 'render', 'position');
 
       class RenderComponent extends Component {
         constructor(color) {
@@ -39,24 +30,24 @@
         }
       }
 
-      let leftwall = entityManager.create('wall', 'leftwall');
-      entityManager.addComponent(leftwall,
+      let leftwall = managers.entity.create('wall', 'leftwall');
+      managers.entity.addComponent(leftwall,
         new RenderComponent('black'),
         new PositionComponent(1, 2)
       );
 
-      let rightwall = entityManager.create('wall', 'rightwall');
-      entityManager.addComponent(rightwall,
+      let rightwall = managers.entity.create('wall', 'rightwall');
+      managers.entity.addComponent(rightwall,
         new RenderComponent('red'),
         new PositionComponent(5, 7)
       );
 
-      let invisiblewall = entityManager.create('wall', 'invisiblewall');
-      entityManager.addComponent(invisiblewall,
+      let invisiblewall = managers.entity.create('wall', 'invisiblewall');
+      managers.entity.addComponent(invisiblewall,
         new PositionComponent(10, 20)
       );
 
-      systemManager.updateLoop();
+      managers.system.updateLoop();
     </script>
   </body>
 </html>
