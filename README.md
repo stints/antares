@@ -55,7 +55,7 @@ Entities are not handled directly except in your system update methods. They are
 entityId = managers.entity.create('required-group-name', 'optional-tag');
 
 // To add components to your entity, pass the unique ID of your entity and the components you wish to add.
-managers.addComponent(entityId,
+managers.entity.addComponent(entityId,
   new PositionComponent(1, 1),
   new VelocityComponent(),
   new RenderComponent()
