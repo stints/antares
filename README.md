@@ -3,17 +3,26 @@
 A simple ECS library written in ES6 javascript.  Only works with Chrome v.50+.
 
 ### Systems
-Systems and their update method handle the logic that modifies and uses your entities components.
+Systems must declare either an update or render method.  Failure will result in an error.
+The library uses a dynamic fixed timestep to update and render your game.
 All systems must a subclass of System.
 ```javascript
 class RenderSystem extends System {
-  update() {
-    // Your update method has access to the System entities property.
+  render() {
+    // Your update and render methods has access to the System entities property.
     // This array is filled with the entities your system defined when
     // registering to the SystemManager.
     console.log(this.entities);
 
-    // render logic would go here
+    // render logic goes here
+  }
+}
+
+class CollisionSystem extends System {
+  update() {
+    console.log(this.entities);
+
+    // collision logic goes here
   }
 }
 

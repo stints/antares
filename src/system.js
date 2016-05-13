@@ -28,8 +28,4 @@ class System {
       }
     }
   }
-
-  update() {
-    throw new Error('function update() must be implemented by subclass.');
-  }
 }
