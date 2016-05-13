@@ -1,3 +1,240 @@
+function UUID() {
+  let buffer = new Uint32Array(8);
+  window.crypto.getRandomValues(buffer);
+  let hex = [];
+  for(let i = 0; i < buffer.length; i++) {
+    hex.push(buffer[i].toString(16));
+  }
+  let s = hex.join('');
+  return s.substring(0,8)+"-"+s.substring(8,12)+"-"+s.substring(12,16)+"-"+s.substring(16,20)+"-"+s.substring(20,32);
+}
+
+class Vector {
+  constructor(x, y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  add(vector) {
+    let x = this.x + vector.x;
+    let y = this.y + vector.y;
+
+    return new Vector(x, y);
+  }
+
+  sub(vector) {
+    let x = this.x - vector.x;
+    let y = this.y - vector.y;
+
+    return new Vector(x, y);
+  }
+
+  length() {
+    return this._round(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)), 6);
+  }
+
+  dot(vector) {
+    return this.x * vector.x + this.y * vector.y;
+  }
+
+  angle(vector) {
+    return Math.acos(this.dot(vector) / this.length() * vector.length());
+  }
+
+  cross(vector) {
+    return this.x * vector.y - this.y * vector.x;
+  }
+
+  normalize() {
+    let length = this.length();
+    let x = this.x / length;
+    let y = this.y / length;
+
+    return new Vector(x, y);
+  }
+
+  rotate(rad) {
+    let sin = this._round(Math.sin(rad), 10);
+    let cos = this._round(Math.cos(rad), 10);
+    let x = this.x * cos - this.y * sin;
+    let y = this.x * sin + this.y * cos;
+
+    return new Vector(x, y);
+  }
+
+  scale(factor) {
+    let x = this.x * factor;
+    let y = this.y * factor;
+
+    return new Vector(x, y);
+  }
+
+  _round(value, amount = 6) {
+    let d = Math.pow(10, amount);
+    let s = 1/(d*10);
+    return Math.round((value + s) * d) / d
+  }
+}
+
+class Component {
+  name() {
+    return this.constructor.name.toLowerCase().replace('component','');
+  }
+}
+
+class Entity {
+  constructor() {
+    this._id = UUID();
+    this._manager = null;
+    this._tag =  null;
+    this._group = null;
+
+  }
+
+  get id() {
+    return this._id;
+  }
+
+  get manager() {
+    return this._manager;
+  }
+
+  set manager(manager) {
+    this._manager = manager;
+  }
+
+  get tag() {
+    return this._tag;
+  }
+
+  set tag(tag) {
+    this._tag = tag;
+  }
+
+  get group() {
+    return this._group;
+  }
+
+  set group(group) {
+    this._group = group;
+  }
+
+  getComponentNames() {
+    let names = [];
+    let thisKeys = Object.keys(this);
+    for(let i = 0; i < thisKeys.length; i++) {
+      if(thisKeys[i].charAt(0) != '_') {
+        names.push(thisKeys[i]);
+      }
+    }
+    return names;
+  }
+
+  addComponent(component) {
+    if(component instanceof Component) {
+      this[component.name()] = component;
+      return true;
+    } else {
+      return new Error('object must be a subclass of Component');
+    }
+    return false;
+  }
+
+  removeComponent(component) {
+    let componentName = typeof component == 'string' ? component : component.name();
+    if(this.hasOwnProperty(componentName)) {
+      delete this[componentName.toLowerCase()];
+      return true;
+    }
+    return false;
+  }
+
+  removeAllComponents() {
+    let thisKeys = Object.keys(this);
+    for(let i = 0; i < thisKeys.length; i++) {
+      if(thisKeys[i].charAt(0) != '_') {
+        this.removeComponent(thisKeys[i]);
+      }
+    }
+    return;
+  }
+}
+
+class Sprite {
+  constructor(name, tiles, width, height, x, y, sheet) {
+    this.name = name;
+    this.tiles = tiles;
+    this.width = width;
+    this.height = height;
+    this.x = x;
+    this.y = y;
+    this.sheet = sheet;
+
+    this.currentTile = -1;
+  }
+
+  nextTile() {
+    this.currentTile = ++this.currentTile < this.tiles ? this.currentTile : 0;
+
+    let options = {
+      'sheet': this.sheet,
+      'y': this.y,
+      'x': this.x + this.width * this.currentTile,
+      'width': this.width,
+      'height': this.height
+    };
+
+    return options;
+  }
+}
+
+class System {
+  constructor() {
+    this.canvasManager = null;
+    this.entityManager = null;
+    this.eventManager = null;
+
+    this._componentsTracked = [];
+
+    this.entities = [];
+  }
+
+  set componentsTracked(componentsTracked) {
+    this._componentsTracked = componentsTracked;
+  }
+
+  addComponentListener(entity) {
+    if(this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      this.entities.push(entity);
+    }
+  }
+
+  removeComponentListener(entity) {
+    if(!this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+      for(let i = 0; i < this.entities.length; i++) {
+        if(entity.id === this.entities[i].id) {
+          this.entities.splice(i, 1);
+        }
+      }
+    }
+  }
+}
+
+class Ticker {
+  constructor() {
+    this.lastTick = window.performance.now();
+    this.time = 0;
+  }
+
+  tick() {
+    let now = window.performance.now();
+    let tick = Math.min(1, now - this.lastTick);
+    this.lastTick = now;
+    this.time += tick;
+    return tick;
+  }
+}
+
 class Manager {}
 
 class EventManager extends Manager {
@@ -245,6 +482,43 @@ class CanvasManager extends Manager {
     return;
   }
 }
+class SpriteManager extends Manager {
+  constructor() {
+    super();
+    this._sheets = {};
+  }
+
+  addSheet(name, src, tiles, width, height, x, y) {
+    let img = new Image();
+    this._sheets[name] = {
+      'sprite': new Sprite(name, tiles, width, height, x, y, img),
+      'load': false
+    };
+
+    img.addEventListener('load', () => this.sheetLoadListener(name));
+    img.src = src;
+
+    return;
+  }
+
+  sheetLoadListener(name) {
+    this._sheets[name].load = true;
+  }
+
+  sheetsLoaded() {
+    let isLoaded = true;
+    let sheets = Object.keys(this._sheets);
+    for(let i = 0; i < sheets.length; i++) {
+      if(!this._sheets[sheets[i]].load) {
+        isLoaded = false;
+        break;
+      }
+    }
+    return isLoaded;
+  }
+
+
+}
 class SystemManager extends Manager {
   constructor(canvasManager, entityManager, eventManager) {
     super();
@@ -284,280 +558,12 @@ class SystemManager extends Manager {
     }
   }
 }
-class SpriteManager extends Manager {
-  constructor() {
-    super();
-    this._sheets = {};
-  }
-
-  addSheet(name, src, tiles, width, height, x, y) {
-    let img = new Image();
-    this._sheets[name] = {
-      'sprite': new Sprite(name, tiles, width, height, x, y, img),
-      'load': false
-    };
-
-    img.addEventListener('load', () => this.sheetLoadListener(name));
-    img.src = src;
-
-    return;
-  }
-
-  sheetLoadListener(name) {
-    this._sheets[name].load = true;
-  }
-
-  sheetsLoaded() {
-    let isLoaded = true;
-    let sheets = Object.keys(this._sheets);
-    for(let i = 0; i < sheets.length; i++) {
-      if(!this._sheets[sheets[i]].load) {
-        isLoaded = false;
-        break;
-      }
-    }
-    return isLoaded;
-  }
-
-
-}
-class Component {
-  name() {
-    return this.constructor.name.toLowerCase().replace('component','');
-  }
-}
-class Sprite {
-  constructor(name, tiles, width, height, x, y, sheet) {
-    this.name = name;
-    this.tiles = tiles;
-    this.width = width;
-    this.height = height;
-    this.x = x;
-    this.y = y;
-    this.sheet = sheet;
-
-    this.currentTile = -1;
-  }
-
-  nextTile() {
-    this.currentTile = ++this.currentTile < this.tiles ? this.currentTile : 0;
-
-    let options = {
-      'sheet': this.sheet,
-      'y': this.y,
-      'x': this.x + this.width * this.currentTile,
-      'width': this.width,
-      'height': this.height
-    };
-
-    return options;
-  }
-}
-class System {
-  constructor() {
-    this.canvasManager = null;
-    this.entityManager = null;
-    this.eventManager = null;
-
-    this._componentsTracked = [];
-
-    this.entities = [];
-  }
-
-  set componentsTracked(componentsTracked) {
-    this._componentsTracked = componentsTracked;
-  }
-
-  addComponentListener(entity) {
-    if(this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
-      this.entities.push(entity);
-    }
-  }
-
-  removeComponentListener(entity) {
-    if(!this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
-      for(let i = 0; i < this.entities.length; i++) {
-        if(entity.id === this.entities[i].id) {
-          this.entities.splice(i, 1);
-        }
-      }
-    }
-  }
-}
-class Entity {
-  constructor() {
-    this._id = UUID();
-    this._manager = null;
-    this._tag =  null;
-    this._group = null;
-
-  }
-
-  get id() {
-    return this._id;
-  }
-
-  get manager() {
-    return this._manager;
-  }
-
-  set manager(manager) {
-    this._manager = manager;
-  }
-
-  get tag() {
-    return this._tag;
-  }
-
-  set tag(tag) {
-    this._tag = tag;
-  }
-
-  get group() {
-    return this._group;
-  }
-
-  set group(group) {
-    this._group = group;
-  }
-
-  getComponentNames() {
-    let names = [];
-    let thisKeys = Object.keys(this);
-    for(let i = 0; i < thisKeys.length; i++) {
-      if(thisKeys[i].charAt(0) != '_') {
-        names.push(thisKeys[i]);
-      }
-    }
-    return names;
-  }
-
-  addComponent(component) {
-    if(component instanceof Component) {
-      this[component.name()] = component;
-      return true;
-    } else {
-      return new Error('object must be a subclass of Component');
-    }
-    return false;
-  }
-
-  removeComponent(component) {
-    let componentName = typeof component == 'string' ? component : component.name();
-    if(this.hasOwnProperty(componentName)) {
-      delete this[componentName.toLowerCase()];
-      return true;
-    }
-    return false;
-  }
-
-  removeAllComponents() {
-    let thisKeys = Object.keys(this);
-    for(let i = 0; i < thisKeys.length; i++) {
-      if(thisKeys[i].charAt(0) != '_') {
-        this.removeComponent(thisKeys[i]);
-      }
-    }
-    return;
-  }
-}
-function UUID() {
-  let buffer = new Uint32Array(8);
-  window.crypto.getRandomValues(buffer);
-  let hex = [];
-  for(let i = 0; i < buffer.length; i++) {
-    hex.push(buffer[i].toString(16));
-  }
-  let s = hex.join('');
-  return s.substring(0,8)+"-"+s.substring(8,12)+"-"+s.substring(12,16)+"-"+s.substring(16,20)+"-"+s.substring(20,32);
-}
-class Vector {
-  constructor(x, y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  add(vector) {
-    let x = this.x + vector.x;
-    let y = this.y + vector.y;
-
-    return new Vector(x, y);
-  }
-
-  sub(vector) {
-    let x = this.x - vector.x;
-    let y = this.y - vector.y;
-
-    return new Vector(x, y);
-  }
-
-  length() {
-    return this._round(Math.sqrt(Math.pow(this.x, 2) + Math.pow(this.y, 2)), 6);
-  }
-
-  dot(vector) {
-    return this.x * vector.x + this.y * vector.y;
-  }
-
-  angle(vector) {
-    return Math.acos(this.dot(vector) / this.length() * vector.length());
-  }
-
-  cross(vector) {
-    return this.x * vector.y - this.y * vector.x;
-  }
-
-  normalize() {
-    let length = this.length();
-    let x = this.x / length;
-    let y = this.y / length;
-
-    return new Vector(x, y);
-  }
-
-  rotate(rad) {
-    let sin = this._round(Math.sin(rad), 10);
-    let cos = this._round(Math.cos(rad), 10);
-    let x = this.x * cos - this.y * sin;
-    let y = this.x * sin + this.y * cos;
-
-    return new Vector(x, y);
-  }
-
-  scale(factor) {
-    let x = this.x * factor;
-    let y = this.y * factor;
-
-    return new Vector(x, y);
-  }
-
-  _round(value, amount = 6) {
-    let d = Math.pow(10, amount);
-    let s = 1/(d*10);
-    return Math.round((value + s) * d) / d
-  }
-}
-class Ticker {
-  constructor() {
-    this.lastTick = window.performance.now();
-    this.time = 0;
-  }
-
-  tick() {
-    let now = window.performance.now();
-    let tick = Math.min(1, now - this.lastTick);
-    this.lastTick = now;
-    this.time += tick;
-    return tick;
-  }
-}
-
 class Managers {
   constructor() {
     this.events = new EventManager();
-    this.entity = new EntityManager(this.eventManager);
-    this.canvas = new CanvasManager(this.eventManager);
-    this.system = new SystemManager(this.canvasManager, this.entityManager, this.eventManager);
+    this.entity = new EntityManager(this.events);
+    this.canvas = new CanvasManager(this.events);
+    this.system = new SystemManager(this.canvas, this.entity, this.events);
   }
 }
 

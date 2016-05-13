@@ -1,12 +1,11 @@
 class Manager {}
 
-
 class Managers {
   constructor() {
     this.events = new EventManager();
-    this.entity = new EntityManager(this.eventManager);
-    this.canvas = new CanvasManager(this.eventManager);
-    this.system = new SystemManager(this.canvasManager, this.entityManager, this.eventManager);
+    this.entity = new EntityManager(this.events);
+    this.canvas = new CanvasManager(this.events);
+    this.system = new SystemManager(this.canvas, this.entity, this.events);
   }
 }
 
