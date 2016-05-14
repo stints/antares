@@ -18,9 +18,9 @@ class SystemManager extends Manager {
         throw new Error('System must have either an update or render method.');
       }
 
-      system._canvasManager = this._canvasManager;
-      system._entityManager = this._entityManager;
-      system._eventManager = this._eventManager;
+      system.canvasManager = this._canvasManager;
+      system.entityManager = this._entityManager;
+      system.eventManager = this._eventManager;
       system.componentsTracked = componentsTracked;
 
       this._eventManager.on('addComponent', (entity) => system.addComponentListener(entity));
