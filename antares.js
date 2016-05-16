@@ -204,13 +204,13 @@ class System {
   }
 
   addComponentListener(entity) {
-    if(this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(this.entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
       this.entities.push(entity);
     }
   }
 
   removeComponentListener(entity) {
-    if(!this._entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(!this.entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
       for(let i = 0; i < this.entities.length; i++) {
         if(entity.id === this.entities[i].id) {
           this.entities.splice(i, 1);
@@ -546,6 +546,10 @@ class SystemManager extends Manager {
 
       this._eventManager.on('addComponent', (entity) => system.addComponentListener(entity));
       this._eventManager.on('removeComponent', (entity) => system.removeComponentListener(entity));
+
+      if(typeof system.init === 'function') {
+        system.init();
+      }
 
       return true;
     }
