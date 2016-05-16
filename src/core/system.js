@@ -29,3 +29,15 @@ class System {
     }
   }
 }
+
+class UpdateSystem extends System {
+  update() {
+    throw new Error('must be set in subclass');
+  }
+}
+
+class RenderSystem extends System {
+  render(dt) {
+    throw new Error('must be set in subclass');
+  }
+}

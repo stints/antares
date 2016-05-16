@@ -1,0 +1,1 @@
+class DynamicSystem extends RenderSystem {}

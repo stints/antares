@@ -8,6 +8,10 @@ class SystemManager extends Manager {
     this._eventManager = eventManager;
   }
 
+  load(...systems) {
+    
+  }
+
   register(system, ...componentsTracked) {
     if(system instanceof System) {
       if(typeof system.update === 'function') {

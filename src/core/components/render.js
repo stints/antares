@@ -1,0 +1,1 @@
+class RenderComponent extends Component {}
