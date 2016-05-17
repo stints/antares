@@ -1,8 +1,7 @@
 class System {
   constructor() {
-    this.canvasManager = null;
-    this.entityManager = null;
-    this.eventManager = null;
+    this.entityStore = null;
+    this.messageDispatch = null;
 
     this._componentsTracked = [];
 
@@ -14,13 +13,13 @@ class System {
   }
 
   addComponentListener(entity) {
-    if(this.entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(this.entityStore.hasComponents(entity.id, ...this._componentsTracked)) {
       this.entities.push(entity);
     }
   }
 
   removeComponentListener(entity) {
-    if(!this.entityManager.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(!this.entityStore.hasComponents(entity.id, ...this._componentsTracked)) {
       for(let i = 0; i < this.entities.length; i++) {
         if(entity.id === this.entities[i].id) {
           this.entities.splice(i, 1);
@@ -36,7 +35,7 @@ class UpdateSystem extends System {
   }
 }
 
-class RenderSystem extends System {
+class DrawSystem extends System {
   render(dt) {
     throw new Error('must be set in subclass');
   }

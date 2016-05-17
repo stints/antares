@@ -5,15 +5,27 @@
     <title>test ecs</title>
   </head>
   <body>
-    <script src="antares.min.js"></script>
+    <script src="src/component/component.js"></script>
+    <script src="src/entity/entitystore.js"></script>
+    <script src="src/entity/entity.js"></script>
+    <script src="src/math/vector.js"></script>
+    <script src="src/message/dispatch.js"></script>
+    <script src="src/system/systemstore.js"></script>
+    <script src="src/system/system.js"></script>
+    <script src="src/tick/ticker.js"></script>
+    <script src="src/utils/utils.js"></script>
     <script>
-      class RenderSystem extends System {
-        update() {
+      class RenderSystem extends DrawSystem {
+        render(dt) {
           console.log(this.entities);
         }
       }
 
-      managers.system.register(new RenderSystem(), 'render', 'position');
+      dispatch = new Dispatch();
+      entityStore = new EntityStore(dispatch);
+      systemStore = new SystemStore(dispatch, entityStore);
+
+      systemStore.register(new RenderSystem(), 'render', 'position');
 
       class RenderComponent extends Component {
         constructor(color) {
@@ -30,24 +42,24 @@
         }
       }
 
-      let leftwall = managers.entity.create('wall', 'leftwall');
-      managers.entity.addComponent(leftwall,
+      let leftwall = entityStore.create('wall', 'leftwall');
+      entityStore.addComponent(leftwall,
         new RenderComponent('black'),
         new PositionComponent(1, 2)
       );
 
-      let rightwall = managers.entity.create('wall', 'rightwall');
-      managers.entity.addComponent(rightwall,
+      let rightwall = entityStore.create('wall', 'rightwall');
+      entityStore.addComponent(rightwall,
         new RenderComponent('red'),
         new PositionComponent(5, 7)
       );
 
-      let invisiblewall = managers.entity.create('wall', 'invisiblewall');
-      managers.entity.addComponent(invisiblewall,
+      let invisiblewall = entityStore.create('wall', 'invisiblewall');
+      entityStore.addComponent(invisiblewall,
         new PositionComponent(10, 20)
       );
 
-      managers.system.updateLoop();
+      systemStore.renderLoop();
     </script>
   </body>
 </html>
