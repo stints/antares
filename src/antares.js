@@ -5,12 +5,10 @@ class Antares {
     // set up game managers
     let events = new EventManager();
     let canvas = new CanvasManager(this.events);
-    let states = new StatesManager(this.events, this.canvas);
 
     this._managers = {
       'events': events,
       'canvas': canvas,
-      'states': states
     }
   }
 
