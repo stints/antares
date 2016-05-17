@@ -1,1 +1,0 @@
-class SpriteSystem extends RenderSystem {}

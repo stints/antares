@@ -4,15 +4,13 @@ class Antares {
 
     // set up game managers
     let events = new EventManager();
-    let entity = new EntityManager(this.events);
     let canvas = new CanvasManager(this.events);
-    let system = new SystemManager(this.canvas, this.entity, this.events);
+    let states = new StatesManager(this.events, this.canvas);
 
     this._managers = {
       'events': events,
-      'entity': entity,
       'canvas': canvas,
-      'system': system
+      'states': states
     }
   }
 

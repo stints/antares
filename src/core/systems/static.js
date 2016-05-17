@@ -1,1 +1,0 @@
-class StaticSystem extends RenderSystem {}

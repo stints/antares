@@ -1,1 +1,0 @@
-class InputSystem extends UpdateSystem {}

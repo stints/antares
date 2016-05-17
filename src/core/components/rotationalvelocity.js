@@ -1,1 +1,0 @@
-class RotationVelocityComponent extends Component {}
