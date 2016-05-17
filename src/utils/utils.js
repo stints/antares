@@ -1,3 +1,7 @@
+/**
+ * Generates a new random uuid string.
+ * @return {string} A new hex UUID string
+ */
 function UUID() {
   let buffer = new Uint32Array(8);
   window.crypto.getRandomValues(buffer);
