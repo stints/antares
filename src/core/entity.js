@@ -4,7 +4,7 @@ class Entity {
     this._manager = null;
     this._tag =  null;
     this._group = null;
-
+    this._world = null;
   }
 
   get id() {

@@ -1,8 +1,6 @@
 class Antares {
-  constructor(game, width, height) {
-    this.game = game;
-    this.gameWidth = width;
-    this.gameHeight = height;
+  constructor(gameName) {
+    this.gameName = gameName;
 
     // set up game managers
     let events = new EventManager();
@@ -16,14 +14,6 @@ class Antares {
       'canvas': canvas,
       'system': system
     }
-
-    this.initCanvas();
-  }
-
-  initCanvas() {
-    let c = this._managers.canvas;
-    c.create('static', this.width, this.height, 0, 0);
-    c.create('dynamic', this.width, this.height, 0, 0);
   }
 
   get entity() {

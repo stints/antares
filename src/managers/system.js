@@ -1,7 +1,7 @@
 class SystemManager extends Manager {
   constructor(canvasManager, entityManager, eventManager) {
     super();
-    this._systems = [];
+    this._updates = [];
     this._renders = [];
     this._canvasManager = canvasManager;
     this._entityManager = entityManager;
@@ -9,13 +9,13 @@ class SystemManager extends Manager {
   }
 
   load(...systems) {
-    
+
   }
 
   register(system, ...componentsTracked) {
     if(system instanceof System) {
       if(typeof system.update === 'function') {
-        this._systems.push(system);
+        this._updates.push(system);
       } else if(typeof system.render === 'function') {
         this._renders.push(system);
       } else {
@@ -41,8 +41,14 @@ class SystemManager extends Manager {
   }
 
   updateLoop() {
-    for(let i = 0; i < this._systems.length; i++) {
-      this._systems[i].update();
+    for(let i = 0; i < this._updates.length; i++) {
+      this._updates[i].update();
+    }
+  }
+
+  renderLoop(dt) {
+    for(let i = 0; i < this._renders.length; i++) {
+      this._renders[i].render(dt);
     }
   }
 }

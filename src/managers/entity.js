@@ -8,7 +8,7 @@ class EntityManager extends Manager {
     this._eventManager = eventManager;
   }
 
-  create(group, tag = null) {
+  create(group, tag = '', ...components) {
     let entity = new Entity();
     entity.manager = this;
     entity.group = group;
@@ -17,6 +17,11 @@ class EntityManager extends Manager {
     this._entities[id] = entity;
     this._groups[group] = this._groups[group] || [];
     this._groups[group].push(entity);
+
+    if(components.length > 0) {
+      this.addComponent(id, ...components);
+    }
+
     return id;
   }
 
