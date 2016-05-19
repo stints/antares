@@ -14,18 +14,12 @@
     <script src="src/system/system.js"></script>
     <script src="src/tick/ticker.js"></script>
     <script src="src/utils/utils.js"></script>
+    <script src="src/input.js"></script>
+    <script src="src/play.js"></script>
+    <script src="src/project.js"></script>
+    <script src="src/canvas/canvasstore.js"></script>
+    <script src="src/antares.js"></script>
     <script>
-      class RenderSystem extends DrawSystem {
-        render(dt) {
-          console.log(this.entities);
-        }
-      }
-
-      dispatch = new Dispatch();
-      entityStore = new EntityStore(dispatch);
-      systemStore = new SystemStore(dispatch, entityStore);
-
-      systemStore.register(new RenderSystem(), 'render', 'position');
 
       class RenderComponent extends Component {
         constructor(color) {
@@ -35,31 +29,20 @@
       }
 
       class PositionComponent extends Component {
-        constructor(x, y) {
+        constructor(position) {
           super();
-          this.x = x;
-          this.y = y;
+          this.current = position;
         }
       }
 
-      let leftwall = entityStore.create('wall', 'leftwall');
-      entityStore.addComponent(leftwall,
-        new RenderComponent('black'),
-        new PositionComponent(1, 2)
-      );
+      class SizeComponent extends Component {
+        constructor(width, height) {
+          super();
+          this.width = width;
+          this.height = height;
+        }
+      }
 
-      let rightwall = entityStore.create('wall', 'rightwall');
-      entityStore.addComponent(rightwall,
-        new RenderComponent('red'),
-        new PositionComponent(5, 7)
-      );
-
-      let invisiblewall = entityStore.create('wall', 'invisiblewall');
-      entityStore.addComponent(invisiblewall,
-        new PositionComponent(10, 20)
-      );
-
-      systemStore.renderLoop();
     </script>
   </body>
 </html>

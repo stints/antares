@@ -6,12 +6,12 @@ class EntityStore {
    * Creates a new EntityStore object.
    * @param {Dispatch} dispatch - The message dispatch to be used in the object.
    */
-  constructor(dispatch) {
+  constructor() {
     this.store = {};
     this.groups = {};
     this.components = {};
 
-    this.dispatch = dispatch;
+    this.play = null;
   }
 
   /**
@@ -56,7 +56,7 @@ class EntityStore {
         }
       }
       if(componentsAdded) {
-        this.dispatch.emit('addComponent', entity);
+        this.play.project.dispatch.emit('addComponent', entity);
       }
       return componentsAdded;
     }
@@ -83,7 +83,7 @@ class EntityStore {
         }
       }
       if(componentsRemoved) {
-        this.dispatch.emit('removeComponent', entity);
+        this.play.project.dispatch.emit('removeComponent', entity);
       }
       return componentsRemoved;
     }
@@ -200,5 +200,14 @@ class EntityStore {
     this.components = {};
     this.groups = {};
     this.store = {};
+  }
+
+  /**
+   * Adds a click event onto an entity.
+   * @param {string} entityId - The ID of an entity.
+   * @param {function} handler - A callback function to handle the event when caught.
+   */
+  onClick(entityId, handler) {
+    this.play.project.dispatch.on('click', handler, entityId);
   }
 }
