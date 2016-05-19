@@ -1,3 +1,13 @@
+class Input {
+  constructor() {
+    this.actions = {}
+  }
+
+  addAction(key, handler) {
+    this.actions[key] = {'fired': false, 'handler': handler};
+  }
+}
+
 class KeyInput {
   constructor() {
     this.A  = 'KeyA';

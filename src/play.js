@@ -9,6 +9,8 @@ class Play {
     this.canvas.play = this;
     this.entities = new EntityStore();
     this.entities.play = this;
+
+    this.inputs = new Input();
   }
 
   get project() {
@@ -35,5 +37,9 @@ class Play {
 
     this._plays[name] = play;
     return play;
+  }
+
+  onActionKeys(key, handler) {
+    this._project.inputs.addAction(key, handler);
   }
 }

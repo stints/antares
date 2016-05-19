@@ -11,17 +11,20 @@ class CanvasStore {
 
     canvas.width = width;
     canvas.height = height;
+    canvas.tabIndex = 0;
     element.appendChild(canvas);
 
     this.canvases[name] = canvas;
 
     canvas.onclick = (e) => this.onClick(e);
+    canvas.onkeydown = (e) => this.onKeyDown(e);
+    canvas.onkeyup = (e) => this.onKeyUp(e);
 
     return canvas;
   }
 
   onClick(e) {
-    if(this.play.entities.components.hasOwnProperty('position')) {
+    if(this.play.entities.hasComponents('position')) {
       let entities = this.play.entities.components.position;
       let entityId = null;
       let clickX = e.offsetX;
@@ -39,6 +42,25 @@ class CanvasStore {
       }
       if(entityId) {
         this.project.dispatch.emit('click', null, entityId);
+      }
+    }
+  }
+
+  onKeyDown(e) {
+    let code = e.code;
+    if(this.play.inputs.actions.hasOwnProperty(code)) {
+      if(!this.play.inputs.actions[code].fired) {
+        this.project.inputs.actions[code].fired = true;
+        this.project.inputs.actions[code].handler();
+      }
+    }
+  }
+
+  onKeyUp(e) {
+    let code = e.code;
+    if(this.play.inputs.actions.hasOwnProperty(code)) {
+      if(this.play.inputs.actions[code].fired) {
+        this.project.inputs.actions[code].fired = false;
       }
     }
   }

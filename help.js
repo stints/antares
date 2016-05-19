@@ -26,7 +26,7 @@ startMenuCanvas = startmenu.canvas.create('startmenucanvas', 800, 600, 'body');
 
 // Each play has its own entitystore and systemstore.
 startBtn = startmenu.entities.create('buttons', 'start game');
-startmenu.entities.addComponent(startBtn, new PositionComponent(new Vector(300, 300)), new RenderComponent(startMenuCanvas));
+startmenu.entities.addComponent(startBtn, new PositionComponent(new Vector(300, 300)), new RenderComponent('startmenucanvas'));
 
 // Events can be added to entities.
 startmenu.entities.onClick(startBtn, function() {
