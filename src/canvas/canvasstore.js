@@ -1,7 +1,6 @@
 class CanvasStore {
   constructor() {
     this.canvases = {};
-    this.project = null;
     this.play = null;
   }
 
@@ -41,7 +40,7 @@ class CanvasStore {
         }
       }
       if(entityId) {
-        this.project.dispatch.emit('click', null, entityId);
+        this.play.project.dispatch.emit('click', null, entityId);
       }
     }
   }
@@ -50,9 +49,11 @@ class CanvasStore {
     let code = e.code;
     if(this.play.inputs.actions.hasOwnProperty(code)) {
       if(!this.play.inputs.actions[code].fired) {
-        this.project.inputs.actions[code].fired = true;
-        this.project.inputs.actions[code].handler();
+        this.play.inputs.actions[code].fired = true;
+        this.play.inputs.actions[code].handler();
       }
+    } else if(this.play.inputs.states.hasOwnProperty(code)) {
+      this.play.inputs.states[code]();
     }
   }
 
@@ -60,7 +61,7 @@ class CanvasStore {
     let code = e.code;
     if(this.play.inputs.actions.hasOwnProperty(code)) {
       if(this.play.inputs.actions[code].fired) {
-        this.project.inputs.actions[code].fired = false;
+        this.play.inputs.actions[code].fired = false;
       }
     }
   }

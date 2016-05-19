@@ -1,10 +1,16 @@
 class Input {
   constructor() {
-    this.actions = {}
+    this.actions = {};
+    this.states = {};
+    this.play = null;
   }
 
   addAction(key, handler) {
     this.actions[key] = {'fired': false, 'handler': handler};
+  }
+
+  addState(key, handler) {
+    this.states[key] = handler;
   }
 }
 

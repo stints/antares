@@ -9,8 +9,8 @@ class Play {
     this.canvas.play = this;
     this.entities = new EntityStore();
     this.entities.play = this;
-
     this.inputs = new Input();
+    this.inputs.play = this;
   }
 
   get project() {
