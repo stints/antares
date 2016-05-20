@@ -7,11 +7,10 @@ class SystemStore {
    * @param {Dispatch} messageDispatch - The dispatcher to create and fire messages.
    * @param {EntityStore} entityStore - The EntityStore which holds all entities in the game.
    */
-  constructor(messageDispatch, entityStore) {
+  constructor() {
     this.updates = [];
     this.renders = [];
-    this.messageDispatch = messageDispatch;
-    this.entityStore = entityStore;
+    this.play = null
   }
 
   /**
@@ -30,12 +29,11 @@ class SystemStore {
         throw new Error('System must have either an update or render method.');
       }
 
-      system.entityStore = this.entityStore;
-      system.messageDispatch = this.messageDispatch;
       system.componentsTracked = componentsTracked;
+      system.play = this.play;
 
-      this.messageDispatch.on('addComponent', (entity) => system.addComponentListener(entity));
-      this.messageDispatch.on('removeComponent', (entity) => system.removeComponentListener(entity));
+      this.play.dispatch.on('addComponent', (entity) => system.addComponentListener(entity));
+      this.play.dispatch.on('removeComponent', (entity) => system.removeComponentListener(entity));
 
       if(typeof system.init === 'function') {
         system.init();
@@ -49,7 +47,7 @@ class SystemStore {
   /**
    * Loops over all UpdateSystem.update methods.
    */
-  updateLoop() {
+  updateLoop(dt) {
     for(let i = 0; i < this.updates.length; i++) {
       this.updates[i].update();
     }

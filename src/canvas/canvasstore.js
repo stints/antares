@@ -40,7 +40,7 @@ class CanvasStore {
         }
       }
       if(entityId) {
-        this.play.project.dispatch.emit('click', null, entityId);
+        this.play.dispatch.emit('click', null, entityId);
       }
     }
   }
@@ -53,7 +53,7 @@ class CanvasStore {
         this.play.inputs.actions[code].handler();
       }
     } else if(this.play.inputs.states.hasOwnProperty(code)) {
-      this.play.inputs.states[code]();
+      this.play.inputs.states[code].state = true;
     }
   }
 
@@ -63,6 +63,8 @@ class CanvasStore {
       if(this.play.inputs.actions[code].fired) {
         this.play.inputs.actions[code].fired = false;
       }
+    } else if(this.play.inputs.states.hasOwnProperty(code)) {
+      this.play.inputs.states[code].state = false;
     }
   }
 }

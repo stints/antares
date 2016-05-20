@@ -21,28 +21,265 @@
     <script src="src/antares.js"></script>
     <script>
 
+      class PositionComponent extends Component {
+        constructor(position) {
+          super();
+          this.current = position;
+          this.past = position;
+          this.renderedPast = position;
+        }
+      }
+
+      class VelocityComponent extends Component {
+        constructor(direction, scale) {
+          super();
+          this.direction = direction; // vector
+          this.scale = scale;
+        }
+      }
+
       class RenderComponent extends Component {
+        constructor(canvas) {
+          super();
+          this.canvas = canvas; // name given to canvas in manager
+        }
+      }
+
+      class ColorComponent extends Component {
         constructor(color) {
           super();
           this.color = color;
         }
       }
 
-      class PositionComponent extends Component {
-        constructor(position) {
+      class BorderComponent extends Component {
+        constructor(color, width) {
           super();
-          this.current = position;
+          this.color = color;
+          this.width = width;
         }
       }
 
-      class SizeComponent extends Component {
-        constructor(width, height) {
+      class RectComponent extends Component {
+        constructor(width, height, stroke, fill) {
           super();
           this.width = width;
           this.height = height;
+          this.stroke = stroke;
+          this.fill = fill;
         }
       }
 
+      class CircleComponent extends Component {
+        constructor(radius, stroke, fill) {
+          super();
+          this.radius = radius;
+          this.stroke = stroke;
+          this.fill = fill;
+        }
+      }
+
+      class ScoreComponent extends Component {
+        constructor() {
+          super();
+          this.score = 0;
+        }
+      }
+
+      class TextComponent extends Component {
+        constructor(size, face, fill) {
+          super();
+          this.text = '';
+          this.size = size;
+          this.face = face;
+          this.fill = fill; // bool
+        }
+      }
+
+      class InputComponent extends Component {}
+
+      class ShapeRenderer extends DrawSystem {
+        render(dt) {
+            for(let i = 0; i < this.entities.length; i++) {
+              let entity = this.entities[i];
+              let ctx = entity.render.canvas.getContext('2d');
+              let x = null;
+              let y = null;
+
+              if(entity.position.past) {
+                x = (entity.position.current.x - entity.position.past.x) * dt + entity.position.past.x;
+                y = (entity.position.current.y - entity.position.past.y) * dt + entity.position.past.y;
+              } else {
+                x = entity.position.current.x;
+                y = entity.position.current.y;
+              }
+
+              ctx.save();
+
+              if(entity.hasOwnProperty('rect')) {
+                let width = entity.rect.width;
+                let height = entity.rect.height;
+                ctx.clearRect(entity.position.renderedPast.x, entity.position.renderedPast.y, width, height);
+
+                if(entity.rect.stroke && entity.hasOwnProperty('border')) {
+                  ctx.strokeStyle = entity.border.color;
+                  ctx.lineWidth = entity.border.width;
+                }
+                if(entity.rect.fill && entity.hasOwnProperty('color')) {
+                  ctx.fillStyle = entity.color.color;
+                }
+
+                ctx.translate(x + width / 2, y + height / 2);
+                ctx.beginPath();
+                ctx.rect(-width / 2, -height / 2, width, height);
+
+                if(entity.rect.stroke && entity.hasOwnProperty('border')) {
+                  ctx.stroke();
+                }
+                if(entity.rect.fill && entity.hasOwnProperty('color')) {
+                  ctx.fill();
+                }
+
+              } else if(entity.hasOwnProperty('circle')) {
+                let radius = entity.circle.radius;
+                ctx.clearRect(entity.position.renderedPast.x - radius - 1, entity.position.renderedPast.y - radius - 1, radius * 2, radius * 2);
+
+                if(entity.circle.stroke && entity.hasOwnProperty('border')) {
+                  ctx.strokeStyle = entity.border.color;
+                  ctx.lineWidth = entity.border.width;
+                }
+                if(entity.circle.fill && entity.hasOwnProperty('color')) {
+                  ctx.fillStyle = entity.color.color;
+                }
+
+                ctx.translate(x, y);
+                ctx.beginPath();
+                ctx.arc(0, 0, radius, 0, 2 * Math.PI);
+
+                if(entity.circle.stroke && entity.hasOwnProperty('border')) {
+                  ctx.stroke();
+                }
+                if(entity.circle.fill && entity.hasOwnProperty('color')) {
+                  ctx.fill();
+                }
+
+              } else {
+                console.log('Entity without shape');
+                console.log(entity);
+              }
+
+              entity.position.renderedPast = new Vector(x, y);
+              ctx.restore();
+
+            }
+        }
+      }
+
+      class PositionSystem extends UpdateSystem {
+        // Update position based on velocity
+        update() {
+          for(let i = 0; i < this.entities.length; i++) {
+            let entity = this.entities[i];
+            let currentPosition = entity.position.current;
+            entity.position.past = new Vector(currentPosition.x, currentPosition.y);
+            entity.position.current = currentPosition.add(entity.velocity.direction.scale(entity.velocity.scale));
+          }
+        }
+      }
+
+      class InputSystem extends UpdateSystem {
+        update() {
+          for(let state in this.play.inputs.states) {
+            let obj = this.play.inputs.states[state];
+            if(obj.state) {
+              obj.handlerOn();
+            } else {
+              obj.handlerOff();
+            }
+          }
+        }
+      }
+
+      class CollisionSystem extends UpdateSystem {
+        update() {
+
+        }
+      }
+
+      var pongProject = Antares.createproject('pong');
+
+      var menu = pongProject.play('menu');
+      var game = pongProject.play('game');
+      var credits = pongProject.play('credits');
+
+      var gameCanvas = game.canvas.create('game-canvas', 1000, 600, 'body');
+
+      game.systems.register(new ShapeRenderer(), 'render', 'position');
+      game.systems.register(new PositionSystem(), 'position', 'velocity');
+      game.systems.register(new InputSystem(), 'input');
+
+      var test = game.entities.create('test');
+      game.entities.addComponent(test,
+        new RenderComponent(gameCanvas),
+        new PositionComponent(new Vector(0, 0)),
+        new VelocityComponent(new Vector(0, 0), 0),
+        new RectComponent(25,25, false, true),
+        new ColorComponent('blue'),
+        new InputComponent()
+      );
+
+      console.log(game.entities.store);
+
+      var ticker = new Ticker();
+      var fps = 500;
+      var frameLength = 1;
+      var lag = 0;
+
+      var stopId = null;
+
+      function loop() {
+        stopId = window.requestAnimationFrame(loop);
+
+
+        let tick = ticker.tick();
+        tick = tick < 1000 ? tick : frameLength;
+
+        lag += tick;
+
+        do {
+          game.systems.updateLoop();
+          lag -= frameLength;
+        } while(lag >= frameLength);
+        let lagOffset = lag / frameLength;
+
+        game.systems.renderLoop(lagOffset);
+      }
+
+      function stop() {
+        window.cancelAnimationFrame(stopId);
+      }
+
+      game.inputs.addState(Antares.keys.D, function() {
+        let entity = game.entities.store[test];
+        entity.velocity.direction = new Vector(1,0);
+        entity.velocity.scale = 1;
+      }, function() {
+        let entity = game.entities.store[test];
+        entity.velocity.direction = new Vector(0,0);
+        entity.velocity.scale = 0;
+      });
+
+      game.inputs.addState(Antares.keys.A, function() {
+        let entity = game.entities.store[test];
+        entity.velocity.direction = new Vector(-1,0);
+        entity.velocity.scale = 1;
+      }, function() {
+        let entity = game.entities.store[test];
+        entity.velocity.direction = new Vector(0,0);
+        entity.velocity.scale = 0;
+      });
+
+      stopId = loop();
     </script>
   </body>
 </html>

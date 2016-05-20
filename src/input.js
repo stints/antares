@@ -9,8 +9,8 @@ class Input {
     this.actions[key] = {'fired': false, 'handler': handler};
   }
 
-  addState(key, handler) {
-    this.states[key] = handler;
+  addState(key, handlerOn, handlerOff) {
+    this.states[key] = {'state': false, 'handlerOn': handlerOn, 'handlerOff': handlerOff};
   }
 }
 

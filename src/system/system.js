@@ -6,11 +6,9 @@ class System {
    * Parent constructor for all system subclasses.
    */
   constructor() {
-    this.entityStore = null;
-    this.messageDispatch = null;
-
     this._componentsTracked = [];
 
+    this.play = null;
     this.entities = [];
   }
 
@@ -27,7 +25,7 @@ class System {
    * @param {Entity} entity - The entity which has just fired an `addComponent` event.
    */
   addComponentListener(entity) {
-    if(this.entityStore.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(this.play.entities.hasComponents(entity.id, ...this._componentsTracked)) {
       this.entities.push(entity);
     }
   }
@@ -37,7 +35,7 @@ class System {
    * @param {Entity} entity - The entity which has just fired a `removeComponent` event.
    */
   removeComponentListener(entity) {
-    if(!this.entityStore.hasComponents(entity.id, ...this._componentsTracked)) {
+    if(!this.play.entities.hasComponents(entity.id, ...this._componentsTracked)) {
       for(let i = 0; i < this.entities.length; i++) {
         if(entity.id === this.entities[i].id) {
           this.entities.splice(i, 1);

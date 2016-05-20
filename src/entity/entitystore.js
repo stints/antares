@@ -4,7 +4,6 @@
 class EntityStore {
   /**
    * Creates a new EntityStore object.
-   * @param {Dispatch} dispatch - The message dispatch to be used in the object.
    */
   constructor() {
     this.store = {};
@@ -56,7 +55,7 @@ class EntityStore {
         }
       }
       if(componentsAdded) {
-        this.play.project.dispatch.emit('addComponent', entity);
+        this.play.dispatch.emit('addComponent', entity);
       }
       return componentsAdded;
     }
@@ -83,7 +82,7 @@ class EntityStore {
         }
       }
       if(componentsRemoved) {
-        this.play.project.dispatch.emit('removeComponent', entity);
+        this.play.dispatch.emit('removeComponent', entity);
       }
       return componentsRemoved;
     }
@@ -208,6 +207,6 @@ class EntityStore {
    * @param {function} handler - A callback function to handle the event when caught.
    */
   onClick(entityId, handler) {
-    this.play.project.dispatch.on('click', handler, entityId);
+    this.play.dispatch.on('click', handler, entityId);
   }
 }

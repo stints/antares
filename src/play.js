@@ -11,6 +11,9 @@ class Play {
     this.entities.play = this;
     this.inputs = new Input();
     this.inputs.play = this;
+    this.systems = new SystemStore();
+    this.systems.play = this;
+    this.dispatch = new Dispatch();
   }
 
   get project() {
