@@ -96,6 +96,8 @@
         }
       }
 
+      class CollisionComponent extends Component {}
+
       class InputComponent extends Component {}
 
       class ShapeRenderer extends DrawSystem {
@@ -189,20 +191,42 @@
 
       class InputSystem extends UpdateSystem {
         update() {
-          for(let state in this.play.inputs.states) {
-            let obj = this.play.inputs.states[state];
-            if(obj.state) {
-              obj.handlerOn();
-            } else {
-              obj.handlerOff();
-            }
+          let entity = null;
+          if(this.play.inputs.get(Antares.keys.A)) {
+            entity = this.play.inputs.entity(Antares.keys.A);
+            entity.velocity.direction = new Vector(-1, 0);
+            entity.velocity.scale = 5;
+          } else if(this.play.inputs.get(Antares.keys.D)) {
+            entity = this.play.inputs.entity(Antares.keys.A);
+            entity.velocity.direction = new Vector(1, 0);
+            entity.velocity.scale = 5;
+          } else if(this.play.inputs.get(Antares.keys.W)) {
+            entity = this.play.inputs.entity(Antares.keys.A);
+            entity.velocity.direction = new Vector(0, -1);
+            entity.velocity.scale = 5;
+          } else if(this.play.inputs.get(Antares.keys.S)) {
+            entity = this.play.inputs.entity(Antares.keys.A);
+            entity.velocity.direction = new Vector(0, 1);
+            entity.velocity.scale = 5;
           }
         }
       }
 
       class CollisionSystem extends UpdateSystem {
         update() {
-
+          for(let i = 0; i < this.entities.length; i++) {
+            let entity = this.entities[i];
+            let gWidth = this.play.canvas.get('game-canvas').width;
+            let gHeight = this.play.canvas.get('game-canvas').height;
+            if(entity.position.current.x < 0 || entity.position.current.y < 0 ||
+               entity.position.current.x + entity.rect.width > gWidth ||
+               entity.position.current.y + entity.rect.height > gHeight) {
+                 entity.velocity.direction = new Vector(0, 0);
+                 entity.velocity.scale = 0;
+                 entity.position.current.x++;
+                 entity.position.current.y++;
+               }
+          }
         }
       }
 
@@ -217,6 +241,7 @@
       game.systems.register(new ShapeRenderer(), 'render', 'position');
       game.systems.register(new PositionSystem(), 'position', 'velocity');
       game.systems.register(new InputSystem(), 'input');
+      game.systems.register(new CollisionSystem(), 'collision', 'position', 'rect');
 
       var test = game.entities.create('test');
       game.entities.addComponent(test,
@@ -225,14 +250,13 @@
         new VelocityComponent(new Vector(0, 0), 0),
         new RectComponent(25,25, false, true),
         new ColorComponent('blue'),
-        new InputComponent()
+        new InputComponent(),
+        new CollisionComponent()
       );
 
-      console.log(game.entities.store);
-
       var ticker = new Ticker();
-      var fps = 500;
-      var frameLength = 1;
+      var fps = 1400;
+      var frameLength = 1000/fps;
       var lag = 0;
 
       var stopId = null;
@@ -259,25 +283,11 @@
         window.cancelAnimationFrame(stopId);
       }
 
-      game.inputs.addState(Antares.keys.D, function() {
-        let entity = game.entities.store[test];
-        entity.velocity.direction = new Vector(1,0);
-        entity.velocity.scale = 1;
-      }, function() {
-        let entity = game.entities.store[test];
-        entity.velocity.direction = new Vector(0,0);
-        entity.velocity.scale = 0;
-      });
-
-      game.inputs.addState(Antares.keys.A, function() {
-        let entity = game.entities.store[test];
-        entity.velocity.direction = new Vector(-1,0);
-        entity.velocity.scale = 1;
-      }, function() {
-        let entity = game.entities.store[test];
-        entity.velocity.direction = new Vector(0,0);
-        entity.velocity.scale = 0;
-      });
+      game.inputs.state(Antares.keys.A, test);
+      game.inputs.state(Antares.keys.D, test);
+      game.inputs.state(Antares.keys.W, test);
+      game.inputs.state(Antares.keys.S, test);
+      game.inputs.action(Antares.keys.SPACE, test);
 
       stopId = loop();
     </script>

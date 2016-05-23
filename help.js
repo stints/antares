@@ -28,16 +28,9 @@ startMenuCanvas = startmenu.canvas.create('startmenucanvas', 800, 600, 'body');
 startBtn = startmenu.entities.create('buttons', 'start game');
 startmenu.entities.addComponent(startBtn, new PositionComponent(new Vector(300, 300)), new RenderComponent('startmenucanvas'));
 
-// Events can be added to entities.
-startmenu.entities.onClick(startBtn, function() {
-  // When the button has been clicked, start the game by moving to the Game state.
-  project.playbook('game');
-});
+// Events - mouse and keyboard
+// Each event has two types: actions and states
+// An action is a one time event, while states is an active event that continues while the event is happening.
 
-// Events can also be added to plays.
-world.onKeyAction(Antares.keys.I, function() {
-  if(!project.activeplay != 'game.gamemenu')
-    project.playbook('game.gamemenu');
-  else
-    project.playbook('game.world');
-});
+world.inputs.action()
+world.inputs.state()

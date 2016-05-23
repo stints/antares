@@ -124,6 +124,13 @@ class EntityStore {
     return false;
   }
 
+  get(entityId) {
+    if(this.store.hasOwnProperty(entityId)) {
+      return this.store[entityId];
+    }
+    return null;
+  }
+
   /**
    * Get an entity by its tag name.
    * @param {string} tag - The tag name of an entity.
